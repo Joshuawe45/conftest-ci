@@ -1,0 +1,31 @@
+name: confest-scanning 
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name : Installing conftest tool 
+      run : |
+        LATEST_VERSION=$(wget -O - "https://api.github.com/repos/open-policy-agent/conftest/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' | cut -c 2-)
+        wget "https://github.com/open-policy-agent/conftest/releases/download/v${LATEST_VERSION}/conftest_${LATEST_VERSION}_Linux_x86_64.tar.gz"
+        tar xzf conftest_${LATEST_VERSION}_Linux_x86_64.tar.gz
+        sudo mv conftest /usr/local/bin
+    - name : Docker-scan-confest 
+      run : | 
+        cd $GITHUB_WORKSPACE
+        conftest test --policy policy/docker-file.rego Dockerfile || true 
+    - name : k8-confest
+      run : | 
+        cd $GITHUB_WORKSPACE
+        conftest test --policy policy/dep.rego deployment/deployment.yaml
+        

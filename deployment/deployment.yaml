@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-world
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 1 
+  template:
+    metadata:
+      name: vul-flask 
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: vul-flask 
+        image: we45/flask
+        ports:
+        - containerPort: 80
